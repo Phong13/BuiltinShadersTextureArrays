@@ -28,7 +28,7 @@ float4      _MainTex_ST;
 sampler2D   _DetailAlbedoMap;
 float4      _DetailAlbedoMap_ST;
 
-sampler2D   _BumpMap;
+UNITY_DECLARE_TEX2DARRAY(_BumpMap);
 half        _BumpScale;
 
 sampler2D   _DetailMask;
@@ -204,7 +204,7 @@ half3 Emission(float2 uv)
 #ifdef _NORMALMAP
 half3 NormalInTangentSpace(float4 texcoords)
 {
-    half3 normalTangent = UnpackScaleNormal(tex2D (_BumpMap, texcoords.xy), _BumpScale);
+    half3 normalTangent = UnpackScaleNormal(UNITY_SAMPLE_TEX2DARRAY(_BumpMap, texcoords.xyz), _BumpScale);
 
 #if _DETAIL && defined(UNITY_ENABLE_DETAIL_NORMALMAP)
     half mask = DetailMask(texcoords.xy);

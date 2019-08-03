@@ -20,7 +20,7 @@ Shader "MeshBaker/StandardTextureArray"
         [ToggleOff] _GlossyReflections("Glossy Reflections", Float) = 1.0
 
         _BumpScale("Scale", Float) = 1.0
-        _BumpMap("Normal Map", 2D) = "bump" {}
+        _BumpMap("Normal Map", 2DArray) = "bump" {}
 
         _Parallax ("Height Scale", Range (0.005, 0.08)) = 0.02
         _ParallaxMap ("Height Map", 2D) = "black" {}

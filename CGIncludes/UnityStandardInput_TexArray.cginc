@@ -22,7 +22,7 @@
 half4       _Color;
 half        _Cutoff;
 
-sampler2D   _MainTex;
+UNITY_DECLARE_TEX2DARRAY(_MainTex);
 float4      _MainTex_ST;
 
 sampler2D   _DetailAlbedoMap;
@@ -58,7 +58,7 @@ struct VertexInput
 {
     float4 vertex   : POSITION;
     half3 normal    : NORMAL;
-    float2 uv0      : TEXCOORD0;
+    float3 uv0      : TEXCOORD0;
     float2 uv1      : TEXCOORD1;
 #if defined(DYNAMICLIGHTMAP_ON) || defined(UNITY_PASS_META)
     float2 uv2      : TEXCOORD2;
@@ -73,7 +73,8 @@ float4 TexCoords(VertexInput v)
 {
     float4 texcoord;
     texcoord.xy = TRANSFORM_TEX(v.uv0, _MainTex); // Always source from uv0
-    texcoord.zw = TRANSFORM_TEX(((_UVSec == 0) ? v.uv0 : v.uv1), _DetailAlbedoMap);
+    texcoord.z = v.uv0.z;
+	texcoord.zw = TRANSFORM_TEX(((_UVSec == 0) ? v.uv0 : v.uv1), _DetailAlbedoMap);
     return texcoord;
 }
 
@@ -84,7 +85,8 @@ half DetailMask(float2 uv)
 
 half3 Albedo(float4 texcoords)
 {
-    half3 albedo = _Color.rgb * tex2D (_MainTex, texcoords.xy).rgb;
+	half3 tmp = UNITY_SAMPLE_TEX2DARRAY(_MainTex, texcoords.xyz).rgb;
+    half3 albedo = _Color.rgb * tmp.rgb;
 #if _DETAIL
     #if (SHADER_TARGET < 30)
         // SM20: instruction count limitation
@@ -107,12 +109,12 @@ half3 Albedo(float4 texcoords)
     return albedo;
 }
 
-half Alpha(float2 uv)
+half Alpha(float3 uv)
 {
 #if defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
     return _Color.a;
 #else
-    return tex2D(_MainTex, uv).a * _Color.a;
+    return UNITY_SAMPLE_TEX2DARRAY(_MainTex, uv).a * _Color.a;
 #endif
 }
 
@@ -128,13 +130,13 @@ half Occlusion(float2 uv)
 #endif
 }
 
-half4 SpecularGloss(float2 uv)
+half4 SpecularGloss(float3 uv)
 {
     half4 sg;
 #ifdef _SPECGLOSSMAP
     #if defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
         sg.rgb = tex2D(_SpecGlossMap, uv).rgb;
-        sg.a = tex2D(_MainTex, uv).a;
+        sg.a = UNITY_SAMPLE_TEX2DARRAY(_MainTex, uv).a;
     #else
         sg = tex2D(_SpecGlossMap, uv);
     #endif
@@ -142,7 +144,7 @@ half4 SpecularGloss(float2 uv)
 #else
     sg.rgb = _SpecColor.rgb;
     #ifdef _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-        sg.a = tex2D(_MainTex, uv).a * _GlossMapScale;
+        sg.a = UNITY_SAMPLE_TEX2DARRAY(_MainTex, uv).a * _GlossMapScale;
     #else
         sg.a = _Glossiness;
     #endif
@@ -150,14 +152,14 @@ half4 SpecularGloss(float2 uv)
     return sg;
 }
 
-half2 MetallicGloss(float2 uv)
+half2 MetallicGloss(float3 uv)
 {
     half2 mg;
 
 #ifdef _METALLICGLOSSMAP
     #ifdef _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
         mg.r = tex2D(_MetallicGlossMap, uv).r;
-        mg.g = tex2D(_MainTex, uv).a;
+        mg.g = UNITY_SAMPLE_TEX2DARRAY(_MainTex, uv).a;
     #else
         mg = tex2D(_MetallicGlossMap, uv).ra;
     #endif
@@ -165,7 +167,7 @@ half2 MetallicGloss(float2 uv)
 #else
     mg.r = _Metallic;
     #ifdef _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-        mg.g = tex2D(_MainTex, uv).a * _GlossMapScale;
+        mg.g = UNITY_SAMPLE_TEX2DARRAY(_MainTex, uv).a * _GlossMapScale;
     #else
         mg.g = _Glossiness;
     #endif

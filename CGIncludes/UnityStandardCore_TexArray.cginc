@@ -6,7 +6,7 @@
 #include "UnityCG.cginc"
 #include "UnityShaderVariables.cginc"
 #include "UnityStandardConfig.cginc"
-#include "UnityStandardInput.cginc"
+#include "UnityStandardInput_TexArray.cginc"
 #include "UnityPBSLighting.cginc"
 #include "UnityStandardUtils.cginc"
 #include "UnityGBuffer.cginc"
@@ -192,7 +192,7 @@ struct FragmentCommonData
 
 inline FragmentCommonData SpecularSetup (float4 i_tex)
 {
-    half4 specGloss = SpecularGloss(i_tex.xy);
+    half4 specGloss = SpecularGloss(i_tex.xyz);
     half3 specColor = specGloss.rgb;
     half smoothness = specGloss.a;
 
@@ -227,7 +227,7 @@ inline FragmentCommonData RoughnessSetup(float4 i_tex)
 
 inline FragmentCommonData MetallicSetup (float4 i_tex)
 {
-    half2 metallicGloss = MetallicGloss(i_tex.xy);
+    half2 metallicGloss = MetallicGloss(i_tex.xyz);
     half metallic = metallicGloss.x;
     half smoothness = metallicGloss.y; // this is 1 minus the square root of real roughness m.
 
@@ -248,7 +248,7 @@ inline FragmentCommonData FragmentSetup (inout float4 i_tex, float3 i_eyeVec, ha
 {
     i_tex = Parallax(i_tex, i_viewDirForParallax);
 
-    half alpha = Alpha(i_tex.xy);
+    half alpha = Alpha(i_tex.xyz);
     #if defined(_ALPHATEST_ON)
         clip (alpha - _Cutoff);
     #endif

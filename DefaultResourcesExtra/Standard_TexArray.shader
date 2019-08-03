@@ -1,11 +1,11 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-Shader "Standard"
+Shader "MeshBaker/StandardTextureArray"
 {
     Properties
     {
         _Color("Color", Color) = (1,1,1,1)
-        _MainTex("Albedo", 2D) = "white" {}
+        _MainTex("Albedo", 2DArray) = "" {}
 
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
@@ -90,7 +90,7 @@ Shader "Standard"
 
             #pragma vertex vertBase
             #pragma fragment fragBase
-            #include "UnityStandardCoreForward.cginc"
+            #include "../CGIncludes/UnityStandardCoreForward_TexArray.cginc"
 
             ENDCG
         }
@@ -126,7 +126,7 @@ Shader "Standard"
 
             #pragma vertex vertAdd
             #pragma fragment fragAdd
-            #include "UnityStandardCoreForward.cginc"
+            #include "../CGIncludes/UnityStandardCoreForward_TexArray.cginc"
 
             ENDCG
         }
@@ -191,7 +191,7 @@ Shader "Standard"
             #pragma vertex vertDeferred
             #pragma fragment fragDeferred
 
-            #include "UnityStandardCore.cginc"
+            #include "../CGIncludes/UnityStandardCore_TexArray.cginc"
 
             ENDCG
         }
@@ -256,7 +256,7 @@ Shader "Standard"
 
             #pragma vertex vertBase
             #pragma fragment fragBase
-            #include "UnityStandardCoreForward.cginc"
+            #include "../CGIncludes/UnityStandardCoreForward_TexArray.cginc"
 
             ENDCG
         }
@@ -288,7 +288,7 @@ Shader "Standard"
 
             #pragma vertex vertAdd
             #pragma fragment fragAdd
-            #include "UnityStandardCoreForward.cginc"
+            #include "../CGIncludes/UnityStandardCoreForward_TexArray.cginc"
 
             ENDCG
         }

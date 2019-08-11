@@ -209,7 +209,7 @@ inline FragmentCommonData SpecularSetup (float4 i_tex)
 
 inline FragmentCommonData RoughnessSetup(float4 i_tex)
 {
-    half2 metallicGloss = MetallicRough(i_tex.xy);
+    half2 metallicGloss = MetallicRough(i_tex.xyz);
     half metallic = metallicGloss.x;
     half smoothness = metallicGloss.y; // this is 1 minus the square root of real roughness m.
 
@@ -437,11 +437,11 @@ half4 fragForwardBaseInternal (VertexOutputForwardBase i)
     UnityLight mainLight = MainLight ();
     UNITY_LIGHT_ATTENUATION(atten, i, s.posWorld);
 
-    half occlusion = Occlusion(i.tex.xy);
+    half occlusion = Occlusion(i.tex.xyz);
     UnityGI gi = FragmentGI (s, occlusion, i.ambientOrLightmapUV, atten, mainLight);
 
     half4 c = UNITY_BRDF_PBS (s.diffColor, s.specColor, s.oneMinusReflectivity, s.smoothness, s.normalWorld, -s.eyeVec, gi.light, gi.indirect);
-    c.rgb += Emission(i.tex.xy);
+    c.rgb += Emission(i.tex.xyz);
 
     UNITY_EXTRACT_FOG_FROM_EYE_VEC(i);
     UNITY_APPLY_FOG(_unity_fogCoord, c.rgb);
@@ -652,7 +652,7 @@ void fragDeferred (
     half atten = 1;
 
     // only GI
-    half occlusion = Occlusion(i.tex.xy);
+    half occlusion = Occlusion(i.tex.xyz);
 #if UNITY_ENABLE_REFLECTION_BUFFERS
     bool sampleReflectionsInDeferred = false;
 #else
@@ -664,7 +664,7 @@ void fragDeferred (
     half3 emissiveColor = UNITY_BRDF_PBS (s.diffColor, s.specColor, s.oneMinusReflectivity, s.smoothness, s.normalWorld, -s.eyeVec, gi.light, gi.indirect).rgb;
 
     #ifdef _EMISSION
-        emissiveColor += Emission (i.tex.xy);
+        emissiveColor += Emission (i.tex.xyz);
     #endif
 
     #ifndef UNITY_HDR_ON

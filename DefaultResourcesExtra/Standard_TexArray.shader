@@ -5,7 +5,7 @@ Shader "MeshBaker/StandardTextureArray"
     Properties
     {
         _Color("Color", Color) = (1,1,1,1)
-        _MainTex("Albedo", 2DArray) = "" {}
+        _MainTex("Albedo", 2DArray) = "white" {}
 
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
@@ -14,7 +14,7 @@ Shader "MeshBaker/StandardTextureArray"
         [Enum(Metallic Alpha,0,Albedo Alpha,1)] _SmoothnessTextureChannel ("Smoothness texture channel", Float) = 0
 
         [Gamma] _Metallic("Metallic", Range(0.0, 1.0)) = 0.0
-        _MetallicGlossMap("Metallic", 2D) = "white" {}
+        _MetallicGlossMap("Metallic", 2DArray) = "white" {}
 
         [ToggleOff] _SpecularHighlights("Specular Highlights", Float) = 1.0
         [ToggleOff] _GlossyReflections("Glossy Reflections", Float) = 1.0
@@ -23,13 +23,13 @@ Shader "MeshBaker/StandardTextureArray"
         _BumpMap("Normal Map", 2DArray) = "bump" {}
 
         _Parallax ("Height Scale", Range (0.005, 0.08)) = 0.02
-        _ParallaxMap ("Height Map", 2D) = "black" {}
+        _ParallaxMap ("Height Map", 2DArray) = "black" {}
 
         _OcclusionStrength("Strength", Range(0.0, 1.0)) = 1.0
-        _OcclusionMap("Occlusion", 2D) = "white" {}
+        _OcclusionMap("Occlusion", 2DArray) = "white" {}
 
         _EmissionColor("Color", Color) = (0,0,0)
-        _EmissionMap("Emission", 2D) = "white" {}
+        _EmissionMap("Emission", 2DArray) = "white" {}
 
         _DetailMask("Detail Mask", 2D) = "white" {}
 

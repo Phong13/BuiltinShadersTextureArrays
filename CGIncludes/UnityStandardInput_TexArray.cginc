@@ -36,20 +36,20 @@ sampler2D   _DetailNormalMap;
 half        _DetailNormalMapScale;
 
 sampler2D   _SpecGlossMap;
-sampler2D   _MetallicGlossMap;
+UNITY_DECLARE_TEX2DARRAY(_MetallicGlossMap);
 half        _Metallic;
 float       _Glossiness;
 float       _GlossMapScale;
 
-sampler2D   _OcclusionMap;
+UNITY_DECLARE_TEX2DARRAY(_OcclusionMap);
 half        _OcclusionStrength;
 
-sampler2D   _ParallaxMap;
+UNITY_DECLARE_TEX2DARRAY(_ParallaxMap);
 half        _Parallax;
 half        _UVSec;
 
 half4       _EmissionColor;
-sampler2D   _EmissionMap;
+UNITY_DECLARE_TEX2DARRAY(_EmissionMap);
 
 //-------------------------------------------------------------------------------------
 // Input functions
@@ -118,14 +118,14 @@ half Alpha(float3 uv)
 #endif
 }
 
-half Occlusion(float2 uv)
+half Occlusion(float3 uv)
 {
 #if (SHADER_TARGET < 30)
     // SM20: instruction count limitation
     // SM20: simpler occlusion
-    return tex2D(_OcclusionMap, uv).g;
+    return UNITY_SAMPLE_TEX2DARRAY(_OcclusionMap, uv).g;
 #else
-    half occ = tex2D(_OcclusionMap, uv).g;
+    half occ = UNITY_SAMPLE_TEX2DARRAY(_OcclusionMap, uv).g;
     return LerpOneTo (occ, _OcclusionStrength);
 #endif
 }
@@ -158,10 +158,10 @@ half2 MetallicGloss(float3 uv)
 
 #ifdef _METALLICGLOSSMAP
     #ifdef _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-        mg.r = tex2D(_MetallicGlossMap, uv).r;
+        mg.r = UNITY_SAMPLE_TEX2DARRAY(_MetallicGlossMap, uv).r;
         mg.g = UNITY_SAMPLE_TEX2DARRAY(_MainTex, uv).a;
     #else
-        mg = tex2D(_MetallicGlossMap, uv).ra;
+        mg = UNITY_SAMPLE_TEX2DARRAY(_MetallicGlossMap, uv).ra;
     #endif
     mg.g *= _GlossMapScale;
 #else
@@ -175,11 +175,11 @@ half2 MetallicGloss(float3 uv)
     return mg;
 }
 
-half2 MetallicRough(float2 uv)
+half2 MetallicRough(float3 uv)
 {
     half2 mg;
 #ifdef _METALLICGLOSSMAP
-    mg.r = tex2D(_MetallicGlossMap, uv).r;
+    mg.r = UNITY_SAMPLE_TEX2DARRAY(_MetallicGlossMap, uv).r;
 #else
     mg.r = _Metallic;
 #endif
@@ -192,12 +192,12 @@ half2 MetallicRough(float2 uv)
     return mg;
 }
 
-half3 Emission(float2 uv)
+half3 Emission(float3 uv)
 {
 #ifndef _EMISSION
     return 0;
 #else
-    return tex2D(_EmissionMap, uv).rgb * _EmissionColor.rgb;
+    return UNITY_SAMPLE_TEX2DARRAY(_EmissionMap, uv).rgb * _EmissionColor.rgb;
 #endif
 }
 
@@ -232,7 +232,7 @@ float4 Parallax (float4 texcoords, half3 viewDir)
     // Disable parallax on pre-SM3.0 shader target models
     return texcoords;
 #else
-    half h = tex2D (_ParallaxMap, texcoords.xy).g;
+    half h = UNITY_SAMPLE_TEX2DARRAY(_ParallaxMap, texcoords.xyz).g;
     float2 offset = ParallaxOffset1Step (h, _Parallax, viewDir);
     return float4(texcoords.xy + offset, texcoords.zw + offset);
 #endif

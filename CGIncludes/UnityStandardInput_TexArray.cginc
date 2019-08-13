@@ -74,7 +74,8 @@ float4 TexCoords(VertexInput v)
     float4 texcoord;
     texcoord.xy = TRANSFORM_TEX(v.uv0, _MainTex); // Always source from uv0
     texcoord.z = v.uv0.z;
-	texcoord.zw = TRANSFORM_TEX(((_UVSec == 0) ? v.uv0 : v.uv1), _DetailAlbedoMap);
+	// TODO need another way to deal with _DetailAlbedoMap since we can't use it for texcoord.
+	//texcoord.zw = TRANSFORM_TEX(((_UVSec == 0) ? v.uv0 : v.uv1), _DetailAlbedoMap);
     return texcoord;
 }
 

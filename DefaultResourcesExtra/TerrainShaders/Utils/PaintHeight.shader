@@ -1,6 +1,6 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-Shader "Hidden/TerrainEngine/PaintHeight" {
+    Shader "Hidden/TerrainEngine/PaintHeight" {
 
     Properties { _MainTex ("Texture", any) = "" {} }
 
@@ -21,6 +21,7 @@ Shader "Hidden/TerrainEngine/PaintHeight" {
             float4 _BrushParams;
             #define BRUSH_STRENGTH      (_BrushParams[0])
             #define BRUSH_TARGETHEIGHT  (_BrushParams[1])
+            #define kMaxHeight          (32766.0f/65535.0f)
 
             struct appdata_t {
                 float4 vertex : POSITION;
@@ -77,7 +78,7 @@ Shader "Hidden/TerrainEngine/PaintHeight" {
                 float height = UnpackHeightmap(tex2D(_MainTex, heightmapUV));
                 float brushShape = oob * UnpackHeightmap(tex2D(_BrushTex, brushUV));
 
-                return PackHeightmap(clamp(height + BRUSH_STRENGTH * brushShape, 0, 0.5f));
+                return PackHeightmap(clamp(height + BRUSH_STRENGTH * brushShape, 0, kMaxHeight));
             }
             ENDCG
         }
@@ -124,10 +125,9 @@ Shader "Hidden/TerrainEngine/PaintHeight" {
                 {
                     targetHeight = max(height, brushHeight);
                 }
-                targetHeight = clamp(targetHeight, 0.0f, 0.5f);          // Keep in valid range (0..0.5f)
-
                 height = lerp(height, targetHeight, BRUSH_OPACITY);
-                return PackHeightmap(height);
+
+                return PackHeightmap(clamp(height, 0.0f, kMaxHeight));
             }
             ENDCG
         }
@@ -162,7 +162,7 @@ Shader "Hidden/TerrainEngine/PaintHeight" {
                     // see https://www.desmos.com/calculator/880ka3lfkl
                     float p = saturate(brushStrength);
                     float w = (1.0f - p) / (p + 0.000001f);
-                    //                  float w = (1.0f - p*p) / (p + 0.000001f);       // alternative TODO test and compare
+//                  float w = (1.0f - p*p) / (p + 0.000001f);       // alternative TODO test and compare
                     float fx = clamp(w * deltaHeight, -1.0f, 1.0f);
                     float g = fx * (0.5f * fx * sign(fx) - 1.0f);
 
@@ -183,6 +183,8 @@ Shader "Hidden/TerrainEngine/PaintHeight" {
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment SmoothHeight
+
+            float4 _SmoothWeights;      // centered, min, max, unused
 
             float4 SmoothHeight(v2f i) : SV_Target
             {
@@ -211,6 +213,8 @@ Shader "Hidden/TerrainEngine/PaintHeight" {
                 h += UnpackHeightmap(tex2D(_MainTex, heightmapUV + float2( 0,       -yoffset)));
                 h /= 8.0F;
 
+                float3 new_height = float3(h, min(h, height), max(h, height));
+                h = dot(new_height, _SmoothWeights.xyz);
                 return PackHeightmap(lerp(height, h, brushStrength));
             }
             ENDCG
@@ -239,7 +243,31 @@ Shader "Hidden/TerrainEngine/PaintHeight" {
             ENDCG
         }
 
+        Pass    // 5 paint holes
+        {
+            Name "Paint Holes"
+
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment PaintHoles
+
+            float4 PaintHoles(v2f i) : SV_Target
+            {
+                float2 brushUV = PaintContextUVToBrushUV(i.pcUV);
+
+                // out of bounds multiplier
+                float oob = all(saturate(brushUV) == brushUV) ? 1.0f : 0.0f;
+
+                float brushStrength = BRUSH_STRENGTH * oob;
+
+                brushStrength = UnpackHeightmap(tex2D(_BrushTex, brushUV)) > (1.0f - abs(brushStrength)) ? sign(brushStrength) : 0.0f;
+                float holes = tex2D(_MainTex, i.pcUV).r;
+                holes += brushStrength;
+                return holes;
+            }
+
+            ENDCG
+        }
     }
     Fallback Off
-
 }

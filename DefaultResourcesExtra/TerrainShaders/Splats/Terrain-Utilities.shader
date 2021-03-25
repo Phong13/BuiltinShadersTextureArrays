@@ -14,6 +14,7 @@ Shader "Hidden/Nature/Terrain/Utilities"
                 #pragma fragment frag
                 #pragma multi_compile_instancing
                 #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
+                #pragma editor_sync_compilation
                 #include "UnityCG.cginc"
 
                 #define TERRAIN_BASE_PASS
@@ -41,11 +42,14 @@ Shader "Hidden/Nature/Terrain/Utilities"
             Name "Selection"
             Tags { "LightMode" = "SceneSelectionPass" }
 
+            Cull Off
+
             CGPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
                 #pragma multi_compile_instancing
                 #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
+                #pragma editor_sync_compilation
                 #include "UnityCG.cginc"
 
                 #define TERRAIN_BASE_PASS

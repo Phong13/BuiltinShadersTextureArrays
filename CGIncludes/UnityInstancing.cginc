@@ -34,7 +34,7 @@
     #define UNITY_FORCE_MAX_INSTANCE_COUNT 1
 #endif
 
-#if defined(SHADER_API_D3D11) || defined(SHADER_API_GLCORE) || defined(SHADER_API_GLES3)
+#if defined(SHADER_API_D3D11) || defined(SHADER_API_GLCORE) || defined(SHADER_API_GLES3) || defined(SHADER_API_VULKAN)
     #define UNITY_SUPPORT_STEREO_INSTANCING
 #endif
 
@@ -114,7 +114,7 @@
 // - UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX
 #ifdef UNITY_STEREO_INSTANCING_ENABLED
 #if defined(SHADER_API_GLES3) || defined(SHADER_API_GLCORE)
-    #define DEFAULT_UNITY_VERTEX_OUTPUT_STEREO                          uint stereoTargetEyeIndexSV : SV_RenderTargetArrayIndex; uint stereoTargetEyeIndex : BLENDINDICES0;
+    #define DEFAULT_UNITY_VERTEX_OUTPUT_STEREO                          uint stereoTargetEyeIndex : BLENDINDICES0; uint stereoTargetEyeIndexSV : SV_RenderTargetArrayIndex;
     #define DEFAULT_UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output)       output.stereoTargetEyeIndexSV = unity_StereoEyeIndex; output.stereoTargetEyeIndex = unity_StereoEyeIndex;
 #else
     #define DEFAULT_UNITY_VERTEX_OUTPUT_STEREO                          uint stereoTargetEyeIndex : SV_RenderTargetArrayIndex;

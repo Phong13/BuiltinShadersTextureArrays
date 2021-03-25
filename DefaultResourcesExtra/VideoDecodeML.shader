@@ -1,27 +1,38 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-Shader "Hidden/VideoDecodeOSX"
+Shader "Hidden/VideoDecodeML"
 {
+GLSLINCLUDE
+    #include "UnityCG.glslinc"
+ENDGLSL
+
     SubShader
     {
         Pass
         {
-            Name "Flip_RGBARect_To_RGBA"
+            Name "RGBAExternal_To_RGBA"
             ZTest Always Cull Off ZWrite Off Blend Off
 
             GLSLPROGRAM
 
             #pragma multi_compile_local _ ADJUST_TO_LINEARSPACE
 
-            uniform sampler2DRect _MainTex;
+            #extension GL_OES_EGL_image_external : require
+            #pragma glsl_es2
+
+            uniform vec4 _MainTex_ST;
 
             #ifdef VERTEX
+
             varying vec2 textureCoord;
             void main()
             {
                 gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-                textureCoord = vec2(gl_MultiTexCoord0.x, 1.0 - gl_MultiTexCoord0.y) * vec2(textureSize(_MainTex));
+                textureCoord = TRANSFORM_TEX_ST(gl_MultiTexCoord0, _MainTex_ST);
+                // Video texture from the ML Api comes in upside down, we need to flip it vertically for correct orientation
+                textureCoord.y = 1.0 - textureCoord.y;
             }
+
             #endif
 
             #ifdef FRAGMENT
@@ -38,10 +49,12 @@ Shader "Hidden/VideoDecodeOSX"
             }
 
             varying vec2 textureCoord;
+            uniform samplerExternalOES _MainTex;
             void main()
             {
-                gl_FragColor = AdjustForColorSpace(texture(_MainTex, textureCoord));
+                gl_FragColor = AdjustForColorSpace(textureExternal(_MainTex, textureCoord));
             }
+
             #endif
 
             ENDGLSL
@@ -49,23 +62,27 @@ Shader "Hidden/VideoDecodeOSX"
 
         Pass
         {
-            Name "Flip_RGBASplitRect_To_RGBA"
+            Name "RGBASplitExternal_To_RGBA"
             ZTest Always Cull Off ZWrite Off Blend Off
+
             GLSLPROGRAM
 
             #pragma multi_compile_local _ ADJUST_TO_LINEARSPACE
 
-            uniform sampler2DRect _MainTex;
+            #extension GL_OES_EGL_image_external : require
+            #pragma glsl_es2
+            uniform vec4 _MainTex_ST;
 
             #ifdef VERTEX
+
             varying vec3 textureCoordSplit;
             void main()
             {
                 gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-                textureCoordSplit.xz = vec2(0.5f * gl_MultiTexCoord0.x, 1.0 - gl_MultiTexCoord0.y);
-                textureCoordSplit.y = textureCoordSplit.x + 0.5f;
-                textureCoordSplit *= vec2(textureSize(_MainTex)).xxy;
+                textureCoordSplit.xz = vec2(0.5 * gl_MultiTexCoord0.x * _MainTex_ST.x, gl_MultiTexCoord0.y * _MainTex_ST.y) + _MainTex_ST.zw;
+                textureCoordSplit.y = textureCoordSplit.x + 0.5 * _MainTex_ST.x;
             }
+
             #endif
 
             #ifdef FRAGMENT
@@ -82,11 +99,13 @@ Shader "Hidden/VideoDecodeOSX"
             }
 
             varying vec3 textureCoordSplit;
+            uniform samplerExternalOES _MainTex;
             void main()
             {
-                gl_FragColor = AdjustForColorSpace(texture(_MainTex, textureCoordSplit.xz));
-                gl_FragColor.a = texture(_MainTex, textureCoordSplit.yz).g;
+                gl_FragColor.rgb = AdjustForColorSpace(textureExternal(_MainTex, textureCoordSplit.xz)).rgb;
+                gl_FragColor.a   = textureExternal(_MainTex, textureCoordSplit.yz).g;
             }
+
             #endif
 
             ENDGLSL

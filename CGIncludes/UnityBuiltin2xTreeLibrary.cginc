@@ -1,6 +1,3 @@
-// Upgrade NOTE: commented out 'float4x4 _CameraToWorld', a built-in variable
-// Upgrade NOTE: replaced '_CameraToWorld' with 'unity_CameraToWorld'
-
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
 // Shared tree shader functionality for Unity 2.x tree shaders
@@ -20,7 +17,7 @@ CBUFFER_END
 #endif
 
 CBUFFER_START(UnityPerCamera2)
-// float4x4 _CameraToWorld;
+float4x4 _CameraToWorld;
 CBUFFER_END
 
 float _HalfOverCutoff;
@@ -58,7 +55,7 @@ v2f leaves(appdata_tree v)
         #else
                 float3 toLight = unity_LightPosition[i].xyz - viewpos.xyz * unity_LightPosition[i].w;
                 toLight.z *= -1.0;
-                lightDir.xyz = mul( (float3x3)unity_CameraToWorld, normalize(toLight) );
+                lightDir.xyz = mul( (float3x3)_CameraToWorld, normalize(toLight) );
                 float lengthSq = dot(toLight, toLight);
                 atten = 1.0 / (1.0 + lengthSq * unity_LightAtten[i].z);
 
@@ -104,7 +101,7 @@ v2f bark(appdata_tree v)
         #else
                 float3 toLight = unity_LightPosition[i].xyz - viewpos.xyz * unity_LightPosition[i].w;
                 toLight.z *= -1.0;
-                lightDir.xyz = mul( (float3x3)unity_CameraToWorld, normalize(toLight) );
+                lightDir.xyz = mul( (float3x3)_CameraToWorld, normalize(toLight) );
                 float lengthSq = dot(toLight, toLight);
                 atten = 1.0 / (1.0 + lengthSq * unity_LightAtten[i].z);
 

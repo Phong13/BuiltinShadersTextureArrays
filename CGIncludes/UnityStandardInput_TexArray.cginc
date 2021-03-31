@@ -126,7 +126,13 @@ half Occlusion(float3 uv)
     // SM20: simpler occlusion
     return UNITY_SAMPLE_TEX2DARRAY(_OcclusionMap, uv).g;
 #else
-    half occ = UNITY_SAMPLE_TEX2DARRAY(_OcclusionMap, uv).g;
+    // This check is neccessary because tex arrays don't support default textures (white, black, grey..) empty texture slots return .5.
+    // Doesn't lightmap properly if no occlusion map. We need to return occlusion of 1 in this case. 
+    #if (_HAS_OCCLUSION_MAP) 
+        half occ = UNITY_SAMPLE_TEX2DARRAY(_OcclusionMap, uv).g;
+    #else
+        half occ = 1;
+    #endif
     return LerpOneTo (occ, _OcclusionStrength);
 #endif
 }
